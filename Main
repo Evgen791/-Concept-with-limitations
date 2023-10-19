@@ -1,0 +1,34 @@
+#include <type_traits>
+#include <concepts>
+#include <string>
+#include <iostream>
+
+// Определение понятия (concept), которое проверяет, удовлетворяет ли класс определенным требованиям
+template <typename T>
+concept ComplexConcept = requires(T a) {
+    { a.hash() } -> std::convertible_to<long>; // Класс должен иметь метод hash, возвращающий значения, преобразуемые в long
+    { a.toString() } -> std::same_as<std::string>; // Класс должен иметь метод toString, возвращающий std::string
+} && !std::has_virtual_destructor_v<T>; // Класс не должен иметь виртуального деструктора
+
+// Создание класса TestClass для проверки понятия (concept)
+class TestClass {
+public:
+    long hash() const { return 123456789L; }; // Метод hash, удовлетворяющий требованиям понятия
+    std::string toString() const { return "This is a test"; }; // Метод toString, удовлетворяющий требованиям понятия
+};
+
+int main() {
+
+    TestClass testClassObj; // Создание объекта класса TestClass
+
+    // Проверка, удовлетворяет ли TestClass понятию ComplexConcept
+    if constexpr(ComplexConcept<TestClass>) {
+        std::cout << "The class meets the requirements of the ComplexConcept\n";
+        std::cout << "hash: " << testClassObj.hash() << '\n'; // Вывод результата метода hash
+        std::cout << "toString: " << testClassObj.toString() << '\n'; // Вывод результата метода toString
+    } else {
+        std::cout << "The class does not meet the requirements of the ComplexConcept\n"; // Сообщение о невыполнении требований понятия
+    }
+
+    return 0;
+}
